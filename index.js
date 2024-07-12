@@ -5,37 +5,40 @@ async function init(url) {
     const page = await browser.newPage();
 
     await page.goto(url);
-    try {
+    
         const fecha = await page.waitForSelector('#ctl00_MainContentHolder_txtPastDate');
         await fecha.type('30-06-2024')
         const fechaButton = await page.waitForSelector('#ctl00_MainContentHolder_butShowPastWeather');
         await fechaButton.click();
 
-        await page.waitForSelector('.days-details-table > tbody > tr:nth-child(9) > td > .days-temp');
-        await page.waitForSelector('.days-details-table > tbody > tr:nth-child(10) > td > .days-temp');
+        try {
+        const resultado = await page.evaluate(() => {
+            const temp18 = document.querySelector('#aspnetForm > div.wrapper > section > div > div > div.col.main > div:nth-child(5) > div > div > div.days-details > table > tbody > tr:nth-child(9) > td:nth-child(1) > p.days-temp').innerText;
+            const temp21 = document.querySelector('#aspnetForm > div.wrapper > section > div > div > div.col.main > div:nth-child(5) > div > div > div.days-details > table > tbody > tr:nth-child(10) > td:nth-child(1) > p.days-temp').innerText;
+     
+            
+            console.log(temp18, temp21)
 
-        const temp18 = await page.evaluate(()=>{
-           return page.querySelector('.days-details-table > tbody > tr:nth-child(9) > td > .days-temp').innerText;
+            const tempPromedio = (parseInt(temp18) + parseInt(temp21)) / 2;
+            return tempPromedio;
+
         })
-        
-        const temp21 = await page.evaluate(()=>{
-            return page.querySelector('.days-details-table > tbody > tr:nth-child(10) > td > .days-temp').innerText;
-         })
 
-        const tempPromedio = (parseInt(temp18) + parseInt(temp21)) / 2;
 
-        console.log(`La temperatura promedio para el 30 de junio de 2024 en Los Ángeles fue de ${tempPromedio}°C`);
+        console.log(`La temperatura promedio para el 30 de junio de 2024 en Los Ángeles fue de ${resultado}°C`);
+
+        browser.close();
 
 
     } catch (error) {
-        console.log('La página no se cargó o no se encontró el selector');
+        console.log('La página no se cargó o no se encontró el selector', error);
     }
 
 
 
-    
 
 
-}   
+
+}
 
 init('https://www.worldweatheronline.com/los-angeles-weather-history/california/us.aspx')
